@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Elephant</title>
+  <meta name="description" content="Seven cities. Thirty restaurants. Every kitchen replaced without interruption. A cinematic account of upgrading 30 Aurora PostgreSQL clusters with zero downtime, zero errors." />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&family=Barlow+Condensed:wght@600;700&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════
+       §1  HERO
+  ══════════════════════════════════════════════════ -->
+  <section id="hero">
+
+    <h1 class="hero-title reveal">THE ELEPHANT</h1>
+
+    <p class="hero-descriptor reveal delay-2">
+      A true infrastructure story, told as a restaurant.<br/>
+      <span class="hero-descriptor-sub">How thirty kitchens were replaced mid-service, without a single guest noticing.</span>
+    </p>
+
+    <div class="hero-divider reveal delay-3"></div>
+
+    <p class="hero-tagline reveal delay-4">
+      Seven cities. Thirty restaurants.<br />
+      No service disruption.
+    </p>
+
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════
+       §2  PROLOGUE
+  ══════════════════════════════════════════════════ -->
+  <section id="prologue">
+    <div class="container">
+      <span class="chapter-label reveal">Prologue</span>
+      <h2 class="section-title reveal delay-1">The Service Never Stopped</h2>
+
+      <blockquote class="prologue-quote reveal delay-2">
+        <p>
+          The obvious answer, when a kitchen needs replacing, is to close. Put up the sign.
+          Lock the door. Gut it overnight and reopen in the morning. We know — we have done
+          it that way. We know what the sign feels like, what the calls sound like,
+          what the morning after costs.
+        </p>
+        <p>
+          Imagine a packed restaurant at full service. Every seat taken. Guests mid-meal,
+          already thinking about their dessert order. A queue building at the counter —
+          orders going directly to the kitchen, no one standing between the guests
+          and the pass. The kitchen working at full pace.
+        </p>
+        <p>
+          Now imagine replacing the entire kitchen — every appliance, every station,
+          every member of staff — while every guest keeps eating, mid-meal.
+          Not after hours. Not with a closed sign on the door.
+          Right now. During the rush.
+        </p>
+        <p>
+          Not once. Thirty times. Across seven cities and thirty restaurants. Each one full.
+          Each one unaware that anything was happening at all.
+        </p>
+        <p>
+          This is that story.
+        </p>
+      </blockquote>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════
+       §3  THE CAST
+  ══════════════════════════════════════════════════ -->
+  <section id="cast">
+    <div class="container--wide">
+      <span class="chapter-label reveal">Dramatis Personæ</span>
+      <h2 class="section-title reveal delay-1">The Cast</h2>
+
+      <div class="cast-grid">
+        <div class="cast-card reveal delay-1">
+          <span class="cast-icon" aria-hidden="true">🍽</span>
+          <span class="cast-role">Applications</span>
+          <h3 class="cast-name">Guest</h3>
+          <p class="cast-desc">They order, eat, and keep coming back — reading from and writing to the database throughout service.</p>
+        </div>
+
+        <div class="cast-card reveal delay-2">
+          <span class="cast-icon" aria-hidden="true">🤵</span>
+          <span class="cast-role">PgBouncer</span>
+          <h3 class="cast-name">Waiting Staff</h3>
+          <p class="cast-desc">Once in place, every order flows through them. The seamless coordination layer between guests and kitchen.</p>
+        </div>
+
+        <div class="cast-card reveal delay-3">
+          <span class="cast-icon" aria-hidden="true">📋</span>
+          <span class="cast-role">The Switchover Script</span>
+          <h3 class="cast-name">Manager</h3>
+          <p class="cast-desc">She stands at the pass — the point between the old kitchen and the new, between the order in flight and the moment it is fulfilled. She watches both. She checks the sync. She gives the signal.</p>
+        </div>
+
+        <div class="cast-card reveal delay-4">
+          <span class="cast-icon" aria-hidden="true">🔥</span>
+          <span class="cast-role">PostgreSQL 13 · Aurora</span>
+          <h3 class="cast-name">Old Kitchen</h3>
+          <p class="cast-desc">Reliable. Proven. Years of service. Time to retire — gracefully, during full service.</p>
+        </div>
+
+        <div class="cast-card reveal delay-5">
+          <span class="cast-icon" aria-hidden="true">✨</span>
+          <span class="cast-role">PostgreSQL 17 · Aurora</span>
+          <h3 class="cast-name">New Kitchen</h3>
+          <p class="cast-desc">Built quietly in the back, receiving a live copy of everything. Waiting for its moment.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════
+       §4  CHAPTER I: THE BAR PROBLEM
+  ══════════════════════════════════════════════════ -->
+  <section id="bar-problem">
+    <div class="container">
+      <span class="chapter-label reveal">Chapter I</span>
+      <h2 class="section-title reveal delay-1">The Counter Problem</h2>
+
+      <p class="intro-text reveal delay-2">
+        The counter, in this story, is the direct connection — the place orders went when there
+        was no one to carry them to the guest. Guests came straight to the kitchen window,
+        placing orders directly through the pass. No waiting staff. No coordination layer.
+        Every order landing directly on the kitchen with nothing in between.
+        You could hear it from the street.
+      </p>
+      <p class="intro-text reveal delay-2">
+        It worked, until the day the kitchen needed replacing.
+        Then the absence of that layer became impossible to ignore.
+      </p>
+
+      <div class="timeline">
+        <div class="timeline-item reveal delay-1">
+          <div class="timeline-time">Thirty to sixty days before</div>
+          <h3 class="timeline-title">The Reservation Book Opens</h3>
+          <p class="timeline-body">
+            Everyone who relies on the kitchen has to be told something is coming. Not the details —
+            just that there will be a night when the restaurant is dark. Multiple sign-offs.
+            Calendars negotiated. Approvals from people several steps removed from the kitchen.
+            The date gets written in, weeks out. Thirty days notice, minimum.
+          </p>
+        </div>
+
+        <div class="timeline-item reveal delay-2">
+          <div class="timeline-time">In the weeks that follow</div>
+          <h3 class="timeline-title">Choosing the Night</h3>
+          <p class="timeline-body">
+            A Saturday is chosen — after the last cover, after the staff have gone home,
+            after the floor is empty. If something goes wrong on that quiet night,
+            the staff are pulled back in on the one evening they thought they had off.
+            The night was chosen to minimise the number of guests affected.
+            It cannot, by policy, be moved without starting over.
+          </p>
+        </div>
+
+        <div class="timeline-item reveal delay-3">
+          <div class="timeline-time">Zero Hour</div>
+          <h3 class="timeline-title">The Sign Goes Up</h3>
+          <p class="timeline-body">
+            The front door is locked. Guests who arrive find nothing.
+            Any order already in transit — gone. The counter goes dark.
+            For the duration of the window, the restaurant does not exist.
+          </p>
+        </div>
+
+        <div class="timeline-item reveal delay-4">
+          <div class="timeline-time">The Black Box</div>
+          <h3 class="timeline-title">Handed Off</h3>
+          <p class="timeline-body">
+            Somewhere in the next five to ten minutes, the kitchen changes. Exactly when —
+            no one can say. Sixty seconds. Maybe two minutes. The clock runs.
+            There is no way to watch it happen. No way to intervene.
+            The answer arrives when it arrives.
+          </p>
+        </div>
+
+        <div class="timeline-item reveal delay-5">
+          <div class="timeline-time">Reopening</div>
+          <h3 class="timeline-title">The Reckoning</h3>
+          <p class="timeline-body">
+            The sign comes down. Most guests find their way back. Some don't —
+            they arrive at an address that no longer answers, or reconnect to the wrong kitchen.
+            An incident review is opened. Notes filed. The next restaurant waits.
+          </p>
+        </div>
+      </div>
+
+      <div class="verdict-box reveal">
+        <p>Per restaurant. Per city. Thirty times.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════
+     §4b  THE BILL
+════════════════════════════════════════════════════ -->
+<section id="the-bill">
+  <div class="container">
+    <span class="chapter-label reveal">The Reckoning</span>
+    <h2 class="section-title reveal delay-1">The Bill</h2>
+
+    <p class="intro-text reveal delay-2">
+      The old kitchen's lease had a clause buried in the fine print. Past a certain date,
+      the landlord begins charging a premium — not for anything new, not for any improvement.
+      Simply for the fact that you have not yet upgraded. The meter runs whether service
+      is good or bad, busy or quiet. It just runs.
+    </p>
+    <p class="intro-text reveal delay-3">
+      Across seven cities and thirty restaurants, with 888 burners (vCPUs) between them,
+      that clause had a very specific number attached to it.
+    </p>
+
+    <div class="bill-box reveal delay-4">
+      <div class="bill-header">The premium — per burner, per hour, every hour the old lease ran</div>
+
+      <div class="bill-rows">
+        <div class="bill-row">
+          <div class="bill-period">Years 1–2</div>
+          <div class="bill-day">
+            <span class="bill-num accent-num" data-target="2131">0</span>
+            <span class="bill-unit">/ day</span>
+          </div>
+          <div class="bill-month">
+            <span class="bill-num accent-num" data-target="64824">0</span>
+            <span class="bill-unit">/ month</span>
+          </div>
+          <div class="bill-year">
+            <span class="bill-num accent-num" data-target="777888">0</span>
+            <span class="bill-unit">/ year</span>
+          </div>
+        </div>
+
+        <div class="bill-row bill-row--danger">
+          <div class="bill-period">Year 3+</div>
+          <div class="bill-day">
+            <span class="bill-num danger-num" data-target="4262">0</span>
+            <span class="bill-unit">/ day</span>
+          </div>
+          <div class="bill-month">
+            <span class="bill-num danger-num" data-target="129648">0</span>
+            <span class="bill-unit">/ month</span>
+          </div>
+          <div class="bill-year">
+            <span class="bill-num danger-num" data-target="1555776">0</span>
+            <span class="bill-unit">/ year</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bill-footnote">Not for anything new. Not for any improvement. For the fact of staying.</div>
+      <div class="bill-footnote">† 888 vCPUs · Aurora Extended Support: $0.10/vCPU-hr yr 1–2 · $0.20/vCPU-hr yr 3+</div>
+    </div>
+
+    <p class="bill-kicker reveal delay-5">
+      The question was never <em>whether</em> to upgrade.<br/>
+      The question was <em>how</em> — without closing the restaurants.
+    </p>
+  </div>
+</section>
+
+  <!-- ═══════════════════════════════════════════════
+       §5  DIVIDER
+  ══════════════════════════════════════════════════ -->
+  <section id="divider" aria-hidden="true">
+    <div class="container">
+      <p class="divider-quote reveal"><em>There is another way.</em></p>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════
+       §6  INTERLUDE: THE WAITING STAFF
+  ══════════════════════════════════════════════════ -->
+  <section id="waiting-staff">
+    <div class="container">
+      <span class="chapter-label reveal">Interlude</span>
+      <h2 class="section-title reveal delay-1">The Waiting Staff</h2>
+
+      <p class="intro-text reveal delay-2">
+        The first move was not the kitchen swap. Before anything else could be touched,
+        a coordination layer had to exist — something that could be redirected without
+        the guests ever knowing. That layer was PgBouncer: the waiting staff.
+        Putting them in place — across all thirty restaurants, before any kitchen work began —
+        was itself a full operation, completed first.
+      </p>
+
+      <!-- Architecture Diagram -->
+      <div class="arch-diagram reveal delay-3" aria-label="Architecture before and after diagram">
+
+        <div class="arch-col">
+          <div class="arch-label">Before</div>
+          <div class="arch-row">
+            <div class="arch-node arch-node--guest">Guest</div>
+            <div class="arch-arrow"><span>──────►</span></div>
+            <div class="arch-node arch-node--kitchen">Kitchen</div>
+          </div>
+        </div>
+
+        <div class="arch-divider" aria-hidden="true"></div>
+
+        <div class="arch-col">
+          <div class="arch-label">After</div>
+          <div class="arch-row">
+            <div class="arch-node arch-node--guest">Guest</div>
+            <div class="arch-arrow"><span>──►</span></div>
+            <div class="arch-node arch-node--waiter">Waiting Staff</div>
+            <div class="arch-arrow"><span>──►</span></div>
+            <div class="arch-node arch-node--kitchen">Kitchen</div>
+          </div>
+        </div>
+
+      </div><!-- /.arch-diagram -->
+
+      <p class="interlude-quote reveal delay-4">
+        Every order now flows through them.
+      </p>
+
+      <p class="intro-text reveal delay-5">
+        This matters more than it first appears. Without the waiting staff, there is no
+        lever. No way to pause orders mid-service. No way to say: hold everything for
+        ten seconds while the kitchen changes. No way to redirect traffic without the
+        guests ever knowing a redirect happened. The dining room and the kitchen are
+        the same room, and nothing can be done to one without disturbing the other.
+      </p>
+
+      <p class="intro-text reveal delay-6">
+        With the waiting staff in place, the kitchen becomes a separate room for the
+        first time. The dining room continues. The kitchen can be changed. The renovation
+        becomes possible — not in theory, but in practice, at full service, with every
+        seat taken. That separation is what the entire operation rests on.
+      </p>
+
+      <p class="interlude-quote reveal delay-7">
+        For the first time, the kitchen could be touched <strong>without touching the guests.</strong>
+      </p>
+
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════
+       §7  CHAPTER II: MISE EN PLACE
+  ══════════════════════════════════════════════════ -->
+  <section id="mise-en-place">
+    <div class="container">
+      <span class="chapter-label reveal">Chapter II</span>
+      <h2 class="section-title reveal delay-1">Mise en Place</h2>
+
+      <p class="mise-body reveal delay-2">
+        The new kitchen did not begin from nothing. It began as an exact copy of the old one —
+        same recipes, same stock, same inventory — taken at a precise moment in time. From that
+        moment forward, it received a live copy of every order the old kitchen fulfilled,
+        every order placed by every guest. In real time. Always current.
+        Nothing improvised. Everything ready.
+      </p>
+
+      <p class="mise-body reveal delay-3">
+        While the new kitchen caught up — narrowing its lag from seconds to
+        bytes to nothing — the script was built to handle every contingency.
+      </p>
+
+      <p class="mise-body reveal delay-4">
+        But before any real restaurant was touched, the process ran against test kitchens —
+        built to the same plan, standing in for the real ones in every structural way,
+        with no real guests in their seats and no real orders coming in. This is staging.
+        Every failure mode triggered deliberately, to confirm the recovery. Every guardrail
+        tested against the thing it was meant to catch.
+      </p>
+
+      <p class="mise-body reveal delay-4">
+        One test found something real. After the switch, the old kitchen is locked to
+        everyone — by design. No guest, no member of staff, no stray order can reach it.
+        The manager is the sole exception: she registers her own access card on the fly,
+        as part of the process, before the lockdown begins. The card is not pre-issued.
+        She whitelists herself. In the test kitchen, that registration produced the wrong
+        credential, and the door did not recognise her.
+        At the exact moment when getting in was critical, she would have been outside. She is the one
+        who must enter after the switch: first to cut the supply line from old kitchen
+        to new, then to route it in reverse — so the old kitchen stays current,
+        and a return is possible if anything goes wrong. Without that access, neither step could happen.
+        Not a delay. A permanent loss of control. Found in the test kitchen.
+        Fixed before any real kitchen switchover.
+      </p>
+
+      <p class="mise-body reveal delay-4">
+        Another test found that the step confirming the reverse supply line had been
+        established — that the old kitchen was receiving what it needed to stay current —
+        had been written to always report success, whether the line was open or not.
+        If the connection failed to form, no one would know. Found in testing.
+        Fixed before any real kitchen switchover.
+      </p>
+
+      <p class="mise-body reveal delay-5">
+        The manager did not arrive at a real kitchen until she already knew how every
+        edge of the story ended.
+      </p>
+
+      <!-- Flip Cards -->
+      <div class="guardrails-grid">
+
+        <div class="guardrail-card reveal delay-1" role="button" aria-label="Flip card: sync at critical moment">
+          <div class="guardrail-card__inner">
+            <div class="guardrail-card__front">
+              <p class="guardrail-question">
+                "What if the kitchens fall out of sync at the critical moment?"
+              </p>
+              <span class="guardrail-hint">↻ click to reveal</span>
+            </div>
+            <div class="guardrail-card__back">
+              <p class="guardrail-answer">
+                Before she gives the signal, the manager walks the pass between the two kitchens
+                and checks the gap — the lag between what the old kitchen knows and what the new one
+                has received. It must read <strong>zero</strong>. Not near zero. Not almost.
+                She stands there until it does.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="guardrail-card reveal delay-2" role="button" aria-label="Flip card: guest reaches old kitchen after switch">
+          <div class="guardrail-card__inner">
+            <div class="guardrail-card__front">
+              <p class="guardrail-question">
+                "What if a guest somehow reaches the old kitchen after the switch?"
+              </p>
+              <span class="guardrail-hint">↻ click to reveal</span>
+            </div>
+            <div class="guardrail-card__back">
+              <p class="guardrail-answer">
+                The moment the switch is made, the old kitchen is locked to everyone.
+                A guest who still remembers the old kitchen's address finds a locked door.
+                There is no way in. There is no mistake to make.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="guardrail-card reveal delay-3" role="button" aria-label="Flip card: something goes wrong mid-switchover">
+          <div class="guardrail-card__inner">
+            <div class="guardrail-card__front">
+              <p class="guardrail-question">
+                "What if something goes wrong mid-switchover?"
+              </p>
+              <span class="guardrail-hint">↻ click to reveal</span>
+            </div>
+            <div class="guardrail-card__back">
+              <p class="guardrail-answer">
+                The manager steps back. She signals the waiting staff to resume on the old kitchen,
+                and service continues without a pause — the guests never knew she'd moved at all.
+                She takes a breath, watches for the right moment, and tries again.
+                Nothing broken. Nothing to explain.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="guardrail-card reveal delay-4" role="button" aria-label="Flip card: sequences not carried by replication">
+          <div class="guardrail-card__inner">
+            <div class="guardrail-card__front">
+              <p class="guardrail-question">
+                "What about the hundreds of counters the kitchen copy process doesn't carry automatically?"
+              </p>
+              <span class="guardrail-hint">↻ click to reveal</span>
+            </div>
+            <div class="guardrail-card__back">
+              <p class="guardrail-answer">
+                Every kitchen tracks running totals — ticket numbers, dish tallies, stock counts.
+                The copy process doesn't carry them. Get them wrong and the new kitchen issues
+                duplicate tickets and mis-numbered orders. In the quiet window before resuming,
+                the manager ran a single check across all of them — hundreds — and advanced
+                each counter past where the old kitchen left off. No number could repeat.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="guardrail-card reveal delay-5" role="button" aria-label="Flip card: rollback if something fails after opening">
+          <div class="guardrail-card__inner">
+            <div class="guardrail-card__front">
+              <p class="guardrail-question">
+                "What if something fails after the new kitchen opens?"
+              </p>
+              <span class="guardrail-hint">↻ click to reveal</span>
+            </div>
+            <div class="guardrail-card__back">
+              <p class="guardrail-answer">
+                The moment the new kitchen took its first order, the old one began
+                receiving a copy of everything — quietly, in the background, keeping pace.
+                Receiving a copy of every new order, but no longer serving them. Current. Still ready.
+                Not standing by out of fear — standing by because a plan that accounts for
+                everything accounts for this too.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /.guardrails-grid -->
+
+      <p class="mise-closing reveal delay-1">
+        <em>"Not courage under pressure. Just pressure, applied earlier."</em>
+      </p>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════
+       §8  CHAPTER III: THE MANAGER'S RHYTHM
+  ══════════════════════════════════════════════════ -->
+  <section id="managers-rhythm">
+    <div class="container">
+      <span class="chapter-label reveal">Chapter III</span>
+      <h2 class="section-title reveal delay-1">The Manager's Rhythm</h2>
+
+      <p class="rhythm-prose reveal delay-2">
+        The manager does not force her way. She watches. She waits for the right moment.
+        If the moment isn't right — she steps back, lets service continue, and tries again.
+        Not because she is timid. Because she knows that a forced transition is a failed one.
+      </p>
+
+      <!-- Terminal: Rhythm -->
+      <div class="terminal-wrap reveal delay-3" aria-label="Terminal output: switchover rhythm">
+        <div class="terminal-header">
+          <div class="terminal-dot terminal-dot--red"></div>
+          <div class="terminal-dot terminal-dot--amber"></div>
+          <div class="terminal-dot terminal-dot--green"></div>
+          <span class="terminal-title">switchover.sh — opportunistic pause</span>
+        </div>
+        <div class="terminal-body" id="terminal-rhythm">
+          <span class="terminal-line t-dim"># Watching for the right moment</span>
+          <span class="terminal-line t-blank"> </span>
+          <span class="terminal-line t-normal">Checking the gap between kitchens...</span>
+          <span class="terminal-line t-normal">  gap: closing... closing... none  ✓</span>
+          <span class="terminal-line t-blank"> </span>
+          <span class="terminal-line t-accent">── Attempt 1 ──────────────────────</span>
+          <span class="terminal-line t-accent">Waiting staff: hold all orders.</span>
+          <span class="terminal-line t-warning">  In-flight orders: 6... 5... 4... 4...</span>
+          <span class="terminal-line t-warning">  Still 4... ⏱ running out of time.</span>
+          <span class="terminal-line t-blank"> </span>
+          <span class="terminal-line t-danger">⚠  Guests would feel the wait.</span>
+          <span class="terminal-line t-danger">   Stepping back. Old kitchen resumes.</span>
+          <span class="terminal-line t-normal">   Waiting staff resumed → old kitchen</span>
+          <span class="terminal-line t-dim">   Service uninterrupted.</span>
+          <span class="terminal-line t-blank"> </span>
+          <span class="terminal-line t-dim">Watching for a quieter moment...</span>
+          <span class="terminal-line t-blank"> </span>
+          <span class="terminal-line t-accent">── Attempt 2 ──────────────────────</span>
+          <span class="terminal-line t-accent">Waiting staff: hold all orders.</span>
+          <span class="terminal-line t-normal">  In-flight orders: 3... 2... 1...</span>
+          <span class="terminal-line t-success">  In-flight orders: 0  ✓</span>
+          <span class="terminal-line t-success">  New kitchen: fully current  ✓</span>
+          <span class="terminal-line t-success">  Yes, Chef.</span>
+          <span class="terminal-line t-blank"> </span>
+          <span class="terminal-line t-success">✓  Window open. Proceeding.</span>
+        </div>
+      </div><!-- /.terminal-wrap -->
+
+      <p class="rhythm-quote reveal delay-4">
+        <strong>She never compromises the customer experience to force the switch.</strong>
+      </p>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════
+       §9  CHAPTER IV: THE SWITCHOVER
+  ══════════════════════════════════════════════════ -->
+  <section id="switchover-chapter">
+    <div class="container">
+      <span class="chapter-label reveal">Chapter IV</span>
+      <h2 class="section-title reveal delay-1">The Switchover</h2>
+
+      <p class="switchover-prose reveal delay-2">
+        When the moment came, it was not dramatic. It was the execution of a plan
+        prepared in full. The guests were eating.
+        The manager was watching. She said fire. The kitchen changed.
+      </p>
+
+      <p class="switchover-prose reveal delay-3">
+        The waiting staff paused. The final orders drained. Hundreds of counters aligned.
+        The old kitchen was isolated — its replication path kept open, its data still current.
+        The waiting staff reloaded and resumed, now pointed at the new kitchen. The old
+        kitchen was kept live and confirmed ready — a standby.
+      </p>
+
+      <p class="switchover-prose reveal delay-4">
+        Every second counts. Under ten of them. Start to finish.
+      </p>
+
+      <p class="switchover-prose reveal delay-5">
+        If any order reached the kitchen a moment later than usual, no guest
+        knew it. No order was lost. No plate came back. The pass moved freely.
+      </p>
+
+      <div class="finale-block">
+        <span class="finale-line reveal delay-1">Tuesday afternoon. Service in full swing.</span>
+        <span class="finale-line finale-line--big reveal delay-2">Nobody noticed.</span>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════
+       §10  CHAPTER V: THE SCALE
+  ══════════════════════════════════════════════════ -->
+  <section id="the-scale">
+    <div class="container">
+      <span class="chapter-label reveal">Chapter V</span>
+      <h2 class="section-title reveal delay-1">The Scale</h2>
+
+      <p class="intro-text reveal delay-2">
+        <em>It wasn't one restaurant.</em>
+      </p>
+
+      <!-- Main stats -->
+      <div class="stats-grid">
+        <div class="stat-item reveal delay-1">
+          <span class="stat-number" data-target="7">0</span>
+          <span class="stat-label">Cities</span>
+        </div>
+        <div class="stat-item reveal delay-2">
+          <span class="stat-number" data-target="30">0</span>
+          <span class="stat-label">Restaurants</span>
+        </div>
+        <div class="stat-item reveal delay-3">
+          <span class="stat-number" data-target="1">0</span>
+          <span class="stat-label">Initiative</span>
+        </div>
+        <div class="stat-item reveal delay-4">
+          <span class="stat-number stat-number--success" data-target="0">0</span>
+          <span class="stat-label">Errors</span>
+          <span class="stat-sublabel">Business as usual for every application</span>
+        </div>
+      </div><!-- /.stats-grid -->
+
+      <p class="scale-body reveal">
+        Not thirty moments of tension —
+        <strong>thirty executions of the same careful plan.</strong>
+        Each one ran the same way.
+      </p>
+
+      <div class="escalation reveal delay-1">
+        <p class="escalation__prose">
+          Not thirty restaurants at once. One by one — starting with the test kitchens,
+          where no real guests were at risk. Then the smallest, quietest restaurant in the network.
+          Then the next. Each successful switchover was proof. Each one made the next more certain.
+        </p>
+        <p class="escalation__prose">
+          By the time the largest, busiest flagship locations came — the ones with the most
+          to lose — the process had already run across every smaller kitchen that preceded them.
+          The path was well-worn by then.
+        </p>
+
+        <div class="escalation__stair">
+          <div class="stair-row">
+            <div class="stair-bar" style="--w: 15%"></div>
+            <span class="stair-label">Test kitchens</span>
+            <span class="stair-check">✓</span>
+          </div>
+          <div class="stair-row">
+            <div class="stair-bar" style="--w: 28%"></div>
+            <span class="stair-label">Smallest restaurants</span>
+            <span class="stair-check">✓</span>
+          </div>
+          <div class="stair-row">
+            <div class="stair-bar" style="--w: 46%"></div>
+            <span class="stair-label">Mid-sized restaurants</span>
+            <span class="stair-check">✓</span>
+          </div>
+          <div class="stair-row">
+            <div class="stair-bar" style="--w: 68%"></div>
+            <span class="stair-label">Larger restaurants</span>
+            <span class="stair-check">✓</span>
+          </div>
+          <div class="stair-row">
+            <div class="stair-bar" style="--w: 100%"></div>
+            <span class="stair-label">Flagship locations</span>
+            <span class="stair-check">✓</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contrast box -->
+      <div class="contrast-box reveal">
+        <h3>What this approach avoided across 30 clusters</h3>
+        <div class="contrast-stats">
+          <div class="contrast-stat">
+            <span class="stat-number stat-number--danger" style="font-size: clamp(2rem, 4vw, 3.5rem);">Up to 5 hrs</span>
+            <span class="stat-label" style="color: var(--danger);">Combined downtime avoided</span>
+          </div>
+        </div>
+      </div><!-- /.contrast-box -->
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════
+       §11  THE COMPARISON
+  ══════════════════════════════════════════════════ -->
+  <section id="comparison">
+    <div class="container--wide">
+      <span class="chapter-label reveal">The Reckoning</span>
+      <h2 class="section-title reveal delay-1">AWS Blue-Green vs. Seamless Upgrade</h2>
+
+      <div style="overflow-x: auto;">
+        <table class="comparison-table reveal delay-2">
+          <thead>
+            <tr>
+              <th></th>
+              <th>AWS Blue-Green</th>
+              <th>Seamless Upgrade</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Customer notice required</td>
+              <td class="cell-danger">30–60 days (change management policy)</td>
+              <td class="cell-success">None</td>
+            </tr>
+            <tr>
+              <td>Teams involved</td>
+              <td class="cell-danger">Many</td>
+              <td class="cell-success">Infra-storage</td>
+            </tr>
+            <tr>
+              <td>Timing</td>
+              <td class="cell-danger">Weekend, off-hours</td>
+              <td class="cell-success">Working hours</td>
+            </tr>
+            <tr>
+              <td>Downtime per cluster</td>
+              <td class="cell-danger">60–120s (unpredictable within 5–10 min window)</td>
+              <td class="cell-success">&lt; 10 seconds</td>
+            </tr>
+            <tr>
+              <td>Switchover control</td>
+              <td class="cell-danger">AWS black box</td>
+              <td class="cell-success">Full control</td>
+            </tr>
+            <tr>
+              <td>Retry on failure</td>
+              <td class="cell-danger">Manual, high-stakes</td>
+              <td class="cell-success">Automatic, safe</td>
+            </tr>
+            <tr>
+              <td>Kitchen changes address</td>
+              <td class="cell-danger">Same name, new address — guests may lose their way until the maps catch up</td>
+              <td class="cell-success">The waiting staff's address never changes — they handle the kitchen move themselves</td>
+            </tr>
+            <tr>
+              <td>Errors across 30 clusters</td>
+              <td class="cell-danger">Expected</td>
+              <td class="cell-success"><span class="mono">0</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════
+       §12  CLOSING
+  ══════════════════════════════════════════════════ -->
+  <section id="closing">
+
+    <div class="closing-stanza">
+      <span class="closing-line reveal delay-1">Seven cities.</span>
+      <span class="closing-line reveal delay-2">Thirty restaurants.</span>
+      <span class="closing-line reveal delay-3">Every one of them mid-service.</span>
+      <span class="closing-line reveal delay-4">Every one of them seamless.</span>
+    </div>
+
+    <div class="closing-quiet">
+      <span class="closing-line reveal delay-1">The guests finished their meals.</span>
+      <span class="closing-line reveal delay-2">No order was repeated. No dish arrived at the wrong seat.</span>
+    </div>
+
+    <p class="closing-finale reveal"><em>Service continued.</em></p>
+
+    <p class="closing-aside reveal delay-1">
+      <em>The old kitchen: locked, current, and quietly ready — just in case.</em>
+    </p>
+
+    <div class="closing-meta mono reveal">
+      <p>PostgreSQL 13 → 17</p>
+      <p>7 environments · 30 clusters · 0 errors</p>
+      <p>2026</p>
+    </div>
+
+  </section>
+
+
+  <script src="script.js"></script>
+
+</body>
+</html>
